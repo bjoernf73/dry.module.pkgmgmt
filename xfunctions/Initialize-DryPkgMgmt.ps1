@@ -51,13 +51,7 @@ function Initialize-DryPkgMgmt {
             Git               = [System.Version]"2.33.1";
             GitAutomation     = [System.Version]"0.14.0" 
         }
-
-        ol i 'pkgmgmt Minimum Versions'
-        #! The Out-Log function should support this natively
-        #! The Out-Log function should support a "title" above the pscustomobject
-        $MinimumVersions.PSObject.Properties | ForEach-Object {
-            ol i $_.Name,$_.Value
-        }
+        ol i -obj $MinimumVersions -title 'Package Management minimum versions'
 
         # Common Parameter Set that will be thrown at each function
         $InitDryPkgParams = @{
@@ -74,10 +68,7 @@ function Initialize-DryPkgMgmt {
                 PSSession = $PSSession
             }
         }
-
-        #! The Out-Log function should support a "title" above the hashtable, like "ol d -hash $hashtable -title 'Params thrown at every PkgMgmt sub-function'"
-        ol d 'Params thrown at every PkgMgmt sub-function'
-        ol d -hash $InitDryPkgParams
+        ol d -hash $InitDryPkgParams -title 'Params thrown at every PkgMgmt sub-function'
 
         # Common params to get and save the status object
         $GetSaveDryPkgMgmtBootstrapStatusParams = @{}

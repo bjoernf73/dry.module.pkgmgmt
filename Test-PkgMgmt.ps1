@@ -1,5 +1,5 @@
 try {
-    $target   = '10.0.13.20'
+    $target   = '10.0.13.51'
     $UserName = 'utv\server-admin'
     $pw = "VerySecret123456!"
     [SecureString]$SecStringPassword = ConvertTo-SecureString $pw -AsPlainText -Force
@@ -30,10 +30,15 @@ try {
     Initialize-DryPkgMgmt -PSSession $PSSession
 }
 catch {
-    $PSCmdlet.ThrowTerminatingError($_)
+    throw $_
 }
 finally {
     # Reset PSModulePath
     $env:PSModulePath = $OriginalPSModulePath
     Get-PSSession | Remove-PSSession
+    foreach ($DryModule in  @((Get-Module | 
+        Where-Object { (($_.Name -match "^dry\.action\.") -or ($_.Name -match "^dry\.module\."))}) | 
+        Select-Object Name).Name) {
+        Get-Module $DryModule | Remove-Module -Verbose:$False -Force -ErrorAction Ignore
+    }
 }
