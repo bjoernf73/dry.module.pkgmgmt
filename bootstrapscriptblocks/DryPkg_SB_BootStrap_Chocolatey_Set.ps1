@@ -28,8 +28,9 @@
         $CustomCommands = $null
         $Commands = $null
         
-        # The .version property of chocolatey is not idential to the 
-        # version when running choco --version
+        # The .version property of the file object of 
+        # choco.exe is unrelated to choco.exe --version, 
+        # which is the actual version of chocolatey
         [array]$CustomCommands = @()
         $Commands = @(Get-Command -Name 'choco' -ErrorAction Stop)
         foreach ($Command in $Commands) {

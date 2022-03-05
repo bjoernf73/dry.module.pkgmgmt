@@ -103,3 +103,9 @@ If you use Packer to create images, the following powershell-provisioner config 
     },
     ...
 ```
+
+## On Winget
+
+Why not support winget?
+
+Well, Winget is east, Chocolatey is west. The Winget community has made it clear that the world must adapt to Winget, while Chocolatey adapts to the world around it. Winget is dead on arrival - that's why there is no reason to support it.
