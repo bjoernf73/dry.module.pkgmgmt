@@ -22,7 +22,7 @@ try {
         $env:PSModulePath = "$($env:PSModulePath);$LocalModulesDirectory" 
     }
 
-    Import-Module -Name "$ScriptPath\dry.module.packagemgmt.psd1" -Force -ErrorAction Stop
+    Import-Module -Name "$ScriptPath\dry.module.pkgmgmt.psd1" -Force -ErrorAction Stop
 
     $SessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
     $PSSession = New-PSSession -ComputerName $target -Credential $Credential -UseSSL -SessionOption $SessionOption

@@ -5,7 +5,7 @@
  that this module processes.
 
  Copyright (C) 2021  Bjorn Henrik Formo (bjornhenrikformo@gmail.com)
- LICENSE: https://raw.githubusercontent.com/bjoernf73/dry.module.packagemgmt/main/LICENSE
+ LICENSE: https://raw.githubusercontent.com/bjoernf73/dry.module.pkgmgmt/main/LICENSE
  
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ function Initialize-DryPkgMgmt {
             GitAutomation     = [System.Version]"0.14.0" 
         }
 
-        ol i 'PackageMgmt Minimum Versions'
+        ol i 'pkgmgmt Minimum Versions'
         #! The Out-Log function should support this natively
         #! The Out-Log function should support a "title" above the pscustomobject
         $MinimumVersions.PSObject.Properties | ForEach-Object {

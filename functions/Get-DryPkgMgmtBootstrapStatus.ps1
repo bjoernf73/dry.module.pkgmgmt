@@ -5,7 +5,7 @@
  that this module processes.
 
  Copyright (C) 2021  Bjorn Henrik Formo (bjornhenrikformo@gmail.com)
- LICENSE: https://raw.githubusercontent.com/bjoernf73/dry.module.packagemgmt/main/LICENSE
+ LICENSE: https://raw.githubusercontent.com/bjoernf73/dry.module.pkgmgmt/main/LICENSE
  
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ function Get-DryPkgMgmtBootstrapStatus {
                     New-Item -Path $DryDeployLocalAppData -ItemType Directory -Force -ErrorAction Stop | Out-Null
                 }
                 
-                $DefaultPackageMgmtBootstrapStatusJson = @"
+                $DefaultPkgMgmtBootstrapStatusJson = @"
                 {
                     "Nuget":             false,
                     "PackageManagement": false,
@@ -55,7 +55,7 @@ function Get-DryPkgMgmtBootstrapStatus {
                 }
 "@       
                 If (-not (Test-Path -Path $StatusJsonPath -ErrorAction Continue)) {
-                    [PSObject]$PackageManagementBootstrapStatus = $DefaultPackageMgmtBootstrapStatusJson | 
+                    [PSObject]$PackageManagementBootstrapStatus = $DefaultpkgmgmtBootstrapStatusJson | 
                     ConvertFrom-Json -ErrorAction Stop
                     $PackageManagementBootstrapStatus | 
                         ConvertTo-Json -ErrorAction Stop | 

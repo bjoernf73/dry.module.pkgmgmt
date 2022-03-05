@@ -3,7 +3,7 @@
  function is used to bootstrap proper package management on Windows. 
 
  Copyright (C) 2021  Bjorn Henrik Formo (bjornhenrikformo@gmail.com)
- LICENSE: https://raw.githubusercontent.com/bjoernf73/dry.module.packagemgmt/main/LICENSE
+ LICENSE: https://raw.githubusercontent.com/bjoernf73/dry.module.pkgmgmt/main/LICENSE
  
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by

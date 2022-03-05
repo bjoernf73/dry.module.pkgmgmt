@@ -1,4 +1,4 @@
-# dry.module.packagemgmt
+# dry.module.pkgmgmt
 
 A PSmodule to
  1. bootstrap package management 
