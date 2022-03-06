@@ -32,11 +32,7 @@ function Initialize-DryPkgMgmtComponent {
 
         [Parameter(Mandatory,ParameterSetName = 'RemoteCustom')]
         [Parameter(Mandatory,ParameterSetName = 'LocalCustom')]
-        [String]$PackageSourceName,
-
-        [Parameter(Mandatory,ParameterSetName = 'RemoteCustom')]
-        [Parameter(Mandatory,ParameterSetName = 'LocalCustom')]
-        [String]$PackageSourceLocation,
+        [PSObject]$PackageSources,
 
         [Parameter(Mandatory, ParameterSetName = 'Remote')]
         [Parameter(Mandatory,ParameterSetName = 'RemoteCustom')]

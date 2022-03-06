@@ -35,9 +35,10 @@ The bootstrapping does the following:
 ## Package Source registration
 Register and unregister package sources. Supports the source types:
 
-1. Nuget
-1. Chocolatey
-1. Git
+1. Nugets
+1. Chocolateys
+1. Gits
+
 
 ## Package Installations
 Installs packages, using PackageManagement (a.k.a OneGet). Supports packages of the following types: 
@@ -104,8 +105,25 @@ If you use Packer to create images, the following powershell-provisioner config 
     ...
 ```
 
-## On Winget
+## Example
 
-Why not support winget?
+```json
+{
+  "package_management": {
+    "sources": [
+      {
 
-Well, Winget is east, Chocolatey is west. The Winget community has made it clear that the world must adapt to Winget, while Chocolatey adapts to the world around it. Winget is dead on arrival - that's why there is no reason to support it.
+      },
+      {
+
+      }
+    ],
+    "packages": [
+
+    ],
+    "components": [
+      // windows roles, features, optional components etc
+    ]
+  }
+}
+```

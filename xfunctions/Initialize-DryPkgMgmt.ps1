@@ -27,11 +27,7 @@ function Initialize-DryPkgMgmt {
     param (
         [Parameter(Mandatory,ParameterSetName = 'RemoteCustom')]
         [Parameter(Mandatory,ParameterSetName = 'LocalCustom')]
-        [String]$PackageSourceName,
-
-        [Parameter(Mandatory,ParameterSetName = 'RemoteCustom')]
-        [Parameter(Mandatory,ParameterSetName = 'LocalCustom')]
-        [String]$PackageSourceLocation,
+        [PSObject]$PackageSources,
 
         [Parameter(Mandatory, ParameterSetName = 'Remote')]
         [Parameter(Mandatory,ParameterSetName = 'RemoteCustom')]
@@ -59,8 +55,7 @@ function Initialize-DryPkgMgmt {
         }
         if ($PSCmdlet.ParameterSetName -in 'RemoteCustom','LocalCustom') {
             $InitDryPkgParams += @{
-                PackageSourceName     = "$PackageSourceName"
-                PackageSourceLocation = "$PackageSourceLocation"
+                PackageSources = $PackageSources
             }
         }
         if ($PSCmdlet.ParameterSetName -in 'RemoteCustom','Remote') {
@@ -142,7 +137,7 @@ function Initialize-DryPkgMgmt {
                     Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
                 }
                 else {
-                    throw 'Failed to install Chocolatey'
+                    throw 'Failed to install or upgrade Chocolatey'
                 }
             }
 
@@ -155,7 +150,7 @@ function Initialize-DryPkgMgmt {
                     Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
                 }
                 else {
-                    throw 'Failed to install the Foil chocolatey helper module'
+                    throw 'Failed to install or upgrade the Foil chocolatey helper module'
                 }
             }
 
@@ -168,7 +163,7 @@ function Initialize-DryPkgMgmt {
                     Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
                 }
                 else {
-                    throw 'Failed to install Git client'
+                    throw 'Failed to install or upgrade Git client'
                 }
             }
 
@@ -181,7 +176,7 @@ function Initialize-DryPkgMgmt {
                     Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
                 }
                 else {
-                    throw 'Failed to install the GitAutomation PowerShell module'
+                    throw 'Failed to install or upgrade the GitAutomation PowerShell module'
                 }
             }
         }
