@@ -14,16 +14,6 @@
         [hashtable]$PackageSource
     )
 
-    <#[
-        "$PowerShellGetMinVersion = [system.version]\"2.2.5\"",
-        "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12",
-        "Install-Module -Name PowerShellGet -MinimumVersion $PowerShellGetMinVersion -Scope AllUsers -AllowClobber -Repository PSGallery -Confirm:$false -Force -WarningAction Continue",
-        "Remove-Module -Name PowerShellGet -ErrorAction Ignore",
-        "Remove-Module -Name PackageManagement -ErrorAction Ignore",
-        "$ModulesToDelete = @(Get-Module -Name PowerShellGet -ListAvailable | Where-Object Version -lt $PowerShellGetMinVersion)",
-        "foreach ($m in $ModulesToDelete) { Remove-Item -Path (Split-Path -Path $m.Path) -Recurse -Force }"
-      ],#>
-
     try {
         [string]$PackageSourceName = 'PSGallery'
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
@@ -32,7 +22,10 @@
             [String]$PackageSourceName = $PackageSource["Name"]
             if (-not (Get-PackageSource -Name $PackageSourceName -ErrorAction 'SilentlyContinue')) {
                 # Register-PackageSource -Name MyNuGet -Location https://www.nuget.org/api/v2 -ProviderName NuGet
-                Register-PackageSource @PackageSourceParams -ErrorAction 'Stop' -ProviderName 'Nuget' | Out-Null
+                $PackageSource['ErrorAction'] = 'Stop'
+                if ($null -eq $PackageSource['ProviderName']) { $PackageSource['ProviderName'] = 'Nuget' }
+                if ($null -eq $PackageSource['Trusted'])      { $PackageSource['Trusted'] = $true }
+                Register-PackageSource @PackageSource | Out-Null
             }
         }
         $Modules = @(Get-Module -Name $Module -ListAvailable -ErrorAction Stop | Sort-Object -Property 'Version' -Descending -ErrorAction Stop)
@@ -46,7 +39,6 @@
                 Confirm        = $false
                 Force          = $true
             }
-            Remove-Module -Name 'PackageManagement','PowerShellGet' -Force -ErrorAction SilentlyContinue
             Install-Module @InstallModuleParams | Out-Null
         }
         
@@ -54,7 +46,7 @@
         $ModulesToRemove = $Modules | Where-Object { 
             $_.Version -lt $Modules[0].Version
         }
-        Remove-Module -Name $Module -Force -ErrorAction SilentlyContinue
+        Remove-Module -Name $Module -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         foreach ($ModuleToRemove in $ModulesToRemove) {
             Remove-Item -Path (Split-Path -Path $ModuleToRemove.Path) -Recurse -Force -Confirm:$false
         }

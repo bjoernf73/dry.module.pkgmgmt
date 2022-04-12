@@ -7,15 +7,15 @@
     )
 
     try {
-        $Modules = @(Get-Module -Name 'PowerShellGet' -ListAvailable -ErrorAction Ignore | Sort-Object -Property 'Version' -Descending -ErrorAction Ignore)
+        $Providers = @(Get-PackageProvider -Name 'PowerShellGet' -ListAvailable -ErrorAction Ignore | Sort-Object -Property 'Version' -Descending -ErrorAction Ignore)
 
-        if ($Modules.count -gt 1) {
+        if ($Providers.count -gt 1) {
             # Multiple PowerShellGet modules found on the system 
-            if ($Modules | Where-Object {$_.Version -lt $Modules[0].Version}) {
+            if ($Providers | Where-Object {$_.Version -lt $Providers[0].Version}) {
                 # lower versioned PowerShellGet module(s) found on the system
                 return $false
             }
-            elseif ($Modules[0].Version -ge $MinimumModuleVersion) {
+            elseif ($Providers[0].Version -ge $MinimumModuleVersion) {
                 # multiple, but no lower versioned PowerShellGet module(s) found on the system
                 return $true
             }
@@ -24,11 +24,11 @@
                 return $false
             }
         }
-        elseif ($Modules.count -eq 0) {
+        elseif ($Providers.count -eq 0) {
             # no PowerShellGet module found on the system
             return $false
         }
-        elseif ($Modules[0].Version -ge $MinimumModuleVersion) {
+        elseif ($Providers[0].Version -ge $MinimumModuleVersion) {
             # one PowerShellGet module found on the system, and it's up to date
             return $true
         }
@@ -39,5 +39,8 @@
     }
     catch {
         $PSCmdlet.ThrowTerminatingError($_)
+    }
+    finally {
+        Remove-Module -Name 'PowershellGet' -Force -ErrorAction Ignore -WarningAction SilentlyContinue
     }
 }

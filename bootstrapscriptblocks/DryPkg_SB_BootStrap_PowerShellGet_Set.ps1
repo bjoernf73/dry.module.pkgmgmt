@@ -11,16 +11,6 @@
         [hashtable]$PackageSource
     )
 
-    <#[
-        "$PowerShellGetMinVersion = [system.version]\"2.2.5\"",
-        "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12",
-        "Install-Module -Name PowerShellGet -MinimumVersion $PowerShellGetMinVersion -Scope AllUsers -AllowClobber -Repository PSGallery -Confirm:$false -Force -WarningAction Continue",
-        "Remove-Module -Name PowerShellGet -ErrorAction Ignore",
-        "Remove-Module -Name PackageManagement -ErrorAction Ignore",
-        "$ModulesToDelete = @(Get-Module -Name PowerShellGet -ListAvailable | Where-Object Version -lt $PowerShellGetMinVersion)",
-        "foreach ($m in $ModulesToDelete) { Remove-Item -Path (Split-Path -Path $m.Path) -Recurse -Force }"
-      ],#>
-
     try {
         [string]$PackageSourceName = 'PSGallery'
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
@@ -32,32 +22,35 @@
                 Register-PackageSource @PackageSourceParams -ErrorAction 'Stop' -ProviderName 'Nuget' | Out-Null
             }
         }
-        $Modules = @(Get-Module -Name 'PowerShellGet' -ListAvailable -ErrorAction Stop | Sort-Object -Property 'Version' -Descending -ErrorAction Stop)
-        if ($Modules[0].Version -lt $MinimumModuleVersion) {
-            $InstallModuleParams = @{
+        $Providers = @(Get-PackageProvider -Name 'PowerShellGet' -ListAvailable -ErrorAction Stop | Sort-Object -Property 'Version' -Descending -ErrorAction Stop)
+        if ($Providers[0].Version -lt $MinimumModuleVersion) {
+            $InstallPackageProviderParams = @{
                 Name           = 'PowerShellGet' 
                 MinimumVersion = $MinimumModuleVersion
                 Scope          = 'AllUsers'
-                AllowClobber   = $true 
-                Repository     = $PackageSourceName 
+                Source         = $PackageSourceName 
                 Confirm        = $false
                 Force          = $true
             }
-            Remove-Module -Name 'PackageManagement','PowerShellGet' -Force -ErrorAction SilentlyContinue
-            Install-Module @InstallModuleParams | Out-Null
+            Remove-Module -Name 'PowershellGet' -Force -ErrorAction Ignore -WarningAction SilentlyContinue
+            Install-PackageProvider @InstallPackageProviderParams | Out-Null
         }
         
-        $Modules = @(Get-Module -Name 'PowerShellGet' -ListAvailable -ErrorAction Stop | Sort-Object -Property 'Version' -Descending -ErrorAction Stop)
-        $ModulesToRemove = $Modules | Where-Object { 
-            $_.Version -lt $Modules[0].Version
+        $Providers = @(Get-PackageProvider -Name 'PowerShellGet' -ListAvailable -ErrorAction Stop | Sort-Object -Property 'Version' -Descending -ErrorAction Stop)
+        $ProvidersToRemove = $Providers | Where-Object { 
+            $_.Version -lt $Providers[0].Version
         }
-        Remove-Module -Name 'PowerShellGet' -Force -ErrorAction SilentlyContinue
-        foreach ($ModuleToRemove in $ModulesToRemove) {
-            Remove-Item -Path (Split-Path -Path $ModuleToRemove.Path) -Recurse -Confirm:$false
+        Remove-Module -Name 'PowershellGet' -Force -ErrorAction Ignore -WarningAction SilentlyContinue
+        foreach ($ProviderToRemove in $ProvidersToRemove) {
+            $ProviderPath = Join-Path -Path $ProviderToRemove.ProviderPath -ChildPath '..' | Resolve-Path 
+            Remove-Item -Path $ProviderPath -Recurse -Confirm:$false
         }
         return $true
     }
     catch {
         $PSCmdlet.ThrowTerminatingError($_)
+    }
+    finally {
+        Remove-Module -Name 'PowershellGet' -Force -ErrorAction Ignore -WarningAction SilentlyContinue
     }
 }

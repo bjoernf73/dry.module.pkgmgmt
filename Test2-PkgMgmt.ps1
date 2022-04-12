@@ -31,6 +31,7 @@ try {
     $SessionConfig = New-Object -TypeName PSobject -Property @{
         UseSSL = $true
     }
+    
 
     Initialize-DryPkgMgmt -ComputerName $target -Credential $Credential -SessionConfig $SessionConfig
 }

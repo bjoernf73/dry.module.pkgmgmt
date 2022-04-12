@@ -23,7 +23,7 @@
                 return $true
             }
             else {
-                # all module(s) found on the system are outdated
+                # all modules found on the system are aged
                 return $false
             }
         }

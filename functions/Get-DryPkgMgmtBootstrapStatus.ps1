@@ -4,7 +4,7 @@
  DryDeploy. ModuleConfigs may specify dependencies in it's root config
  that this module processes.
 
- Copyright (C) 2021  Bjorn Henrik Formo (bjornhenrikformo@gmail.com)
+ Copyright (C) 2022  Bjorn Henrik Formo (bjornhenrikformo@gmail.com)
  LICENSE: https://raw.githubusercontent.com/bjoernf73/dry.module.pkgmgmt/main/LICENSE
  
  This program is free software; you can redistribute it and/or modify
@@ -36,27 +36,25 @@ function Get-DryPkgMgmtBootstrapStatus {
     try {
         $GetScriptblock = {
             try {
-                $DryDeployLocalAppData = "$($env:LOCALAPPDATA)\DryDeploy"
+                $DryDeployLocalAppData = "$($env:PROGRAMDATA)\DryDeploy"
                 $ComputerName   = "$($env:COMPUTERNAME)"
                 $StatusJsonPath = Join-Path -Path $DryDeployLocalAppData -ChildPath "DryPkgBootstrapStatus-$($ComputerName).json"
                 if (-not (Test-Path -Path $DryDeployLocalAppData)) {
                     New-Item -Path $DryDeployLocalAppData -ItemType Directory -Force -ErrorAction Stop | Out-Null
                 }
-                
-                $DefaultPkgMgmtBootstrapStatusJson = @"
-                {
-                    "Nuget":             false,
-                    "PackageManagement": false,
-                    "PowerShellGet":     false,
-                    "Chocolatey":        false,
-                    "Foil":              false,
-                    "Git":               false,
-                    "GitAutomation":     false
-                }
-"@       
+
                 If (-not (Test-Path -Path $StatusJsonPath -ErrorAction Continue)) {
-                    [PSObject]$PackageManagementBootstrapStatus = $DefaultpkgmgmtBootstrapStatusJson | 
-                    ConvertFrom-Json -ErrorAction Stop
+                    [PSObject]$PackageManagementBootstrapStatus = [PSObject]@{
+                        Nuget                          = $false
+                        PackageManagement              = $false
+                        LegacyPackageManagementRemoved = $false
+                        PowerShellGet                  = $false
+                        Chocolatey                     = $false
+                        Foil                           = $false
+                        ChocolateyGet                  = $false
+                        Git                            = $false
+                        GitAutomation                  = $false
+                    }
                     $PackageManagementBootstrapStatus | 
                         ConvertTo-Json -ErrorAction Stop | 
                         Out-File -FilePath $StatusJsonPath -Force -Encoding Default 

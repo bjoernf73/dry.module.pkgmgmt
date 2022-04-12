@@ -10,9 +10,8 @@
         $CustomCommands = $null
         $Commands = $null
         
-        # The .version property of the file object of 
-        # choco.exe is unrelated to choco.exe --version, 
-        # which is the actual version of chocolatey
+        # The .version property of the choco.exe file object of is unrelated to  
+        # choco.exe --version, which is the actual version of chocolatey
         [array]$CustomCommands = @()
         $Commands = @(Get-Command -Name 'choco' -ErrorAction Ignore)
         foreach ($Command in $Commands) {

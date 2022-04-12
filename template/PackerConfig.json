@@ -1,0 +1,58 @@
+{
+    "builders": [
+      {
+        "type": "null",
+        "communicator": "winrm",
+        "winrm_username": "{{user `winrm_username`}}",
+        "winrm_password": "{{user `winrm_password`}}",
+        "winrm_host": "{{user `winrm_host`}}",
+        "winrm_use_ssl": true,
+        "winrm_port": 5986,
+        "winrm_insecure": true,
+        "winrm_timeout": "30s",
+        "winrm_use_ntlm": true
+      }
+    ],
+    "provisioners": [
+
+      {
+        "type": "file",
+        "source": "ConfigureRevocation.ps1",
+        "destination": "C:\\DryDeploy\\" 
+      },
+
+      {
+        "type": "powershell",
+        "inline": [
+          "Write-Output 'Changing InstallationPolicy of PSGallery to Trusted'",
+          "Try { Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction Stop } Catch { Write-Output \"CATCH: $($_.ToString())\"; Exit 2 }"
+        ],
+        "elevated_user": "{{user `winrm_username`}}",
+        "elevated_password": "{{user `winrm_password`}}",
+        "valid_exit_codes": [0]
+      },
+      
+      {
+        "type": "powershell",
+        "inline": [
+          "Write-Output 'Installing module PSPKI from PSGallery'",
+          "Try { Install-Module -Name PSPKI -ErrorAction Stop } Catch { Write-Output \"CATCH: $($_.ToString())\"; Exit 2 }"
+        ],
+        "elevated_user": "{{user `winrm_username`}}",
+        "elevated_password": "{{user `winrm_password`}}",
+        "valid_exit_codes": [0]
+      },
+
+      {
+          "type": "powershell",
+          "inline": [
+            "Write-Output 'Creating Revocation Configuration for Online Responder'",
+            "Try { & C:\\DryDeploy\\ConfigureRevocation.ps1 } Catch { Write-Output \"CATCH: $($_.ToString())\"; Exit 2 }"
+          ],
+          "elevated_user": "{{user `winrm_username`}}",
+          "elevated_password": "{{user `winrm_password`}}",
+          "valid_exit_codes": [0]
+      }
+      
+    ]
+}

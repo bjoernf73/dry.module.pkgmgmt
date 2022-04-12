@@ -2,7 +2,7 @@
  This function makes sure a supported Nuget-provider is installed. The
  function is used to bootstrap proper package management on Windows. 
 
- Copyright (C) 2021  Bjorn Henrik Formo (bjornhenrikformo@gmail.com)
+ Copyright (C) 2022  Bjorn Henrik Formo (bjornhenrikformo@gmail.com)
  LICENSE: https://raw.githubusercontent.com/bjoernf73/dry.module.pkgmgmt/main/LICENSE
  
  This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ function Initialize-DryPkgMgmtComponent {
         [PSCustomObject]$MinimumVersions,
 
         [Parameter(Mandatory)]
-        [ValidateSet('Nuget','PackageManagement','PowerShellGet','Chocolatey','Foil','Git','GitAutomation')]
+        [ValidateSet('Nuget','PackageManagement','PowerShellGet','Chocolatey','Foil','ChocolateyGet','Git','GitAutomation','LegacyPackageManagementRemoved')]
         [String]$Component,
 
         [Parameter(Mandatory,ParameterSetName = 'RemoteCustom')]
@@ -40,12 +40,48 @@ function Initialize-DryPkgMgmtComponent {
     )
 
     try {
-        [bool]$NeedsBootstrap = $false
-        [scriptblock]$GetScriptblock = Get-Variable -Name "DryPkg_SB_BootStrap_$($Component)_Get" -ValueOnly -ErrorAction Stop
-        [scriptblock]$SetScriptblock = Get-Variable -Name "DryPkg_SB_BootStrap_$($Component)_Set" -ValueOnly -ErrorAction Stop
 
-        # Params to Get
-        $GetArgumentList = @($MinimumVersions."$Component")
+        Switch ($Component) {
+            {$_ -in 'Foil','GitAutomation'} {
+                [scriptblock]$GetScriptblock = Get-Variable -Name "DryPkg_SB_BootStrap_NugetModule_Get" -ValueOnly -ErrorAction Stop
+                [scriptblock]$SetScriptblock = Get-Variable -Name "DryPkg_SB_BootStrap_NugetModule_Set" -ValueOnly -ErrorAction Stop
+                # Params to Get
+                $GetArgumentList = @($MinimumVersions."$Component","$Component")
+
+                # Params to Set
+                if ($PSCmdlet.ParameterSetName -in 'LocalCustom','RemoteCustom') {
+                    $PackageSource = @{
+                        Name = $PackageSourceName
+                        Location = $PackageSourceLocation
+                    }
+                    $SetArgumentList = @($MinimumVersions."$Component",$Component,$PackageSource)
+                }
+                else {
+                    $SetArgumentList = @($MinimumVersions."$Component",$Component)
+                }
+            }
+            Default {
+                [scriptblock]$GetScriptblock = Get-Variable -Name "DryPkg_SB_BootStrap_$($Component)_Get" -ValueOnly -ErrorAction Stop
+                [scriptblock]$SetScriptblock = Get-Variable -Name "DryPkg_SB_BootStrap_$($Component)_Set" -ValueOnly -ErrorAction Stop
+                # Params to Get
+                $GetArgumentList = @($MinimumVersions."$Component")
+                
+                # Params to Set
+                if ($PSCmdlet.ParameterSetName -in 'LocalCustom','RemoteCustom') {
+                    $PackageSource = @{
+                        Name = $PackageSourceName
+                        Location = $PackageSourceLocation
+                    }
+                    $SetArgumentList = @($MinimumVersions."$Component",$PackageSource)
+                }
+                else {
+                    $SetArgumentList = @($MinimumVersions."$Component")
+                }
+            }
+        }
+
+        [bool]$NeedsBootstrap = $false
+        
         $GetParams = @{
             ScriptBlock  = $GetScriptblock
             ArgumentList = $GetArgumentList
@@ -73,18 +109,6 @@ function Initialize-DryPkgMgmtComponent {
         }
 
         if ($NeedsBootstrap) {
-            # Params to Set
-            if ($PSCmdlet.ParameterSetName -in 'LocalCustom','RemoteCustom') {
-                $PackageSource = @{
-                    Name = $PackageSourceName
-                    Location = $PackageSourceLocation
-                }
-                $SetArgumentList = @($MinimumVersions."$Component",$PackageSource)
-            }
-            else {
-                $SetArgumentList = @($MinimumVersions."$Component")
-            }
-            
             $SetParams = @{
                 ScriptBlock  = $SetScriptblock
                 ArgumentList = $SetArgumentList

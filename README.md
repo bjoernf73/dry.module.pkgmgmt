@@ -110,9 +110,16 @@ If you use Packer to create images, the following powershell-provisioner config 
 ```json
 {
   "package_management": {
+    "providers": [
+      {
+        
+      }
+    ],
     "sources": [
       {
-
+        "Name": "MyChocoSource",
+        "ProviderName": "chocolatey",
+        "Location": "https://192.168.1.2/api/v2"
       },
       {
 

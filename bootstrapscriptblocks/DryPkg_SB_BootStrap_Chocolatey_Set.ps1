@@ -15,9 +15,11 @@
         [string]$InstallScript = 'https://chocolatey.org/install.ps1'
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
         
-        if ($PackageSource) {
+        if ($PackageSource["InstallScript"]) {
             [String]$InstallScript = $PackageSource["InstallScript"]
         }
+        # Remove InstallScript so we can splat the remainder to RegisterPackage 
+        $PackageSource.Remove('InstallScript')
 
         if (Get-Command -Name 'choco' -ErrorAction Ignore) {
             & choco upgrade chocolatey -y | Out-Null
@@ -28,9 +30,8 @@
         $CustomCommands = $null
         $Commands = $null
         
-        # The .version property of the file object of 
-        # choco.exe is unrelated to choco.exe --version, 
-        # which is the actual version of chocolatey
+        # The .version property of the choco.exe file object of is unrelated to  
+        # choco.exe --version, which is the actual version of chocolatey
         [array]$CustomCommands = @()
         $Commands = @(Get-Command -Name 'choco' -ErrorAction Stop)
         foreach ($Command in $Commands) {

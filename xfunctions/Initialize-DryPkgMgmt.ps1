@@ -1,10 +1,11 @@
+Using NameSpace System.Management.Automation
 <# 
  This module provides functions for bootstrapping package management, 
  registering package sources and package installations for use with 
  DryDeploy. ModuleConfigs may specify dependencies in it's root config
  that this module processes.
 
- Copyright (C) 2021  Bjorn Henrik Formo (bjornhenrikformo@gmail.com)
+ Copyright (C) 2022  Bjorn Henrik Formo (bjornhenrikformo@gmail.com)
  LICENSE: https://raw.githubusercontent.com/bjoernf73/dry.module.pkgmgmt/main/LICENSE
  
  This program is free software; you can redistribute it and/or modify
@@ -31,24 +32,33 @@ function Initialize-DryPkgMgmt {
 
         [Parameter(Mandatory, ParameterSetName = 'Remote')]
         [Parameter(Mandatory,ParameterSetName = 'RemoteCustom')]
-        [System.Management.Automation.Runspaces.PSSession] $PSSession
+        [String]$Computername,
+
+        [Parameter(Mandatory, ParameterSetName = 'Remote')]
+        [Parameter(Mandatory,ParameterSetName = 'RemoteCustom')]
+        [PSCredential]$Credential,
+
+        [Parameter(Mandatory, ParameterSetName = 'Remote')]
+        [Parameter(Mandatory,ParameterSetName = 'RemoteCustom')]
+        [PSObject]$SessionConfig
     )
     
     try {
         ol i 'Initializing DryPkgMgmt' -sh
-        ol i 'PkgMgmtInit Parameterset',$PSCmdlet.ParameterSetName
+        ol v 'PkgMgmtInit Parameterset',$PSCmdlet.ParameterSetName
         
         $MinimumVersions = [PSCustomObject]@{
-            Nuget             = [System.Version]"2.8.5.208";
-            PackageManagement = [System.Version]"1.4.7";
-            PowerShellGet     = [System.Version]"2.2.5";
-            Chocolatey        = [System.Version]"0.12.0";
-            Foil              = [System.Version]"0.1.0";
-            Git               = [System.Version]"2.33.1";
+            Nuget             = [System.Version]"2.8.5.208"
+            PackageManagement = [System.Version]"1.4.7"
+            PowerShellGet     = [System.Version]"2.2.5"
+            Chocolatey        = [System.Version]"0.12.0"
+            Foil              = [System.Version]"0.1.0"
+            ChocolateyGet     = [System.Version]"4.0.0.0"
+            Git               = [System.Version]"2.33.1"
             GitAutomation     = [System.Version]"0.14.0" 
         }
         ol i -obj $MinimumVersions -title 'Package Management minimum versions'
-
+        
         # Common Parameter Set that will be thrown at each function
         $InitDryPkgParams = @{
             MinimumVersions = $MinimumVersions
@@ -59,6 +69,13 @@ function Initialize-DryPkgMgmt {
             }
         }
         if ($PSCmdlet.ParameterSetName -in 'RemoteCustom','Remote') {
+            $NewDrySessionParams = @{
+                ComputerName  = $Computername
+                Credential    = $Credential
+                SessionConfig = $SessionConfig
+                SessionType   = 'PSSession'
+            }
+            $PSSession = New-DrySession @NewDrySessionParams
             $InitDryPkgParams += @{
                 PSSession = $PSSession
             }
@@ -81,6 +98,7 @@ function Initialize-DryPkgMgmt {
             ($DryPkgMgmtBootstrapStatus.PowerShellGet) -and
             ($DryPkgMgmtBootstrapStatus.Chocolatey) -and
             ($DryPkgMgmtBootstrapStatus.Foil) -and
+            ($DryPkgMgmtBootstrapStatus.ChocolateyGet) -and
             ($DryPkgMgmtBootstrapStatus.Git) -and
             ($DryPkgMgmtBootstrapStatus.GitAutomation)) {
 
@@ -90,94 +108,162 @@ function Initialize-DryPkgMgmt {
             ol i 'PkgMgmt status','Requires Bootstrapping'
  
             # Nuget provider
-            ol i 'PkgMgmt Status: Nuget-provider',$DryPkgMgmtBootstrapStatus.Nuget
             if (-not ($DryPkgMgmtBootstrapStatus.Nuget)) {
                 $Status = Initialize-DryPkgMgmtComponent -Component 'Nuget' @InitDryPkgParams
                 if ($Status -eq $true) {
+                    ol i 'Updating Nuget Provider','Success' -fore Green
                     $DryPkgMgmtBootstrapStatus.Nuget = $true
                     Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
                 }
                 else {
-                    throw 'Failed to install the updated Nuget provider'
+                    ol i 'Updating Nuget Provider','Failed' -fore Red
+                    throw 'Failed to update Nuget provider'
                 }
+            }
+            else {
+                ol i 'Updating Nuget Provider','Already OK' -fore Green
             }
 
             # PackageManagement PowerShell module
-            ol i 'PkgMgmt Status: PackageManagement',$DryPkgMgmtBootstrapStatus.PackageManagement
             if (-not ($DryPkgMgmtBootstrapStatus.PackageManagement)) {
                 $Status = Initialize-DryPkgMgmtComponent -Component 'PackageManagement' @InitDryPkgParams
                 if ($Status -eq $true) {
+                    ol i 'Updating PackageManagement','Success' -fore Green
                     $DryPkgMgmtBootstrapStatus.PackageManagement = $true
                     Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
                 }
                 else {
+                    ol i 'Updating PackageManagement','Failed' -fore Red
                     throw 'Failed to install the updated PackageManagement PowerShell module'
                 }
             }
+            else {
+                ol i 'Updating PackageManagement','Already OK' -fore Green
+            }
+
+            # Remove Legacy PackageManagement PowerShell module
+            if (-not ($DryPkgMgmtBootstrapStatus.LegacyPackageManagementRemoved)) {
+                If ($PSCmdlet.ParameterSetName -in 'Remote','RemoteCustom') {
+                    $PSSession | Remove-PSSession -Confirm:$false
+                    $InitDryPkgParams['PSSession'] = New-DrySession @NewDrySessionParams
+                    $GetSaveDryPkgMgmtBootstrapStatusParams['PSSession'] = $InitDryPkgParams['PSSession']
+                }
+                
+                $Status = Initialize-DryPkgMgmtComponent -Component 'LegacyPackageManagementRemoved' @InitDryPkgParams
+                if ($Status -eq $true) {
+                    ol i 'Remove Legacy PackageManagement','Success' -fore Green
+                    $DryPkgMgmtBootstrapStatus.PackageManagement = $true
+                    Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
+                }
+                else {
+                    ol i 'Remove Legacy PackageManagement','Failed' -fore Red
+                    throw 'Failed to Remove Legacy PackageManagement'
+                }
+            }
+            else {
+                ol i 'Remove Legacy PackageManagement','Already OK' -fore Green
+            }
 
             # PowerShellGet PowerShell module
-            ol i 'PkgMgmt Status: PowerShellGet',$DryPkgMgmtBootstrapStatus.PowerShellGet
             if (-not ($DryPkgMgmtBootstrapStatus.PowerShellGet)) {
                 $Status = Initialize-DryPkgMgmtComponent -Component 'PowerShellGet' @InitDryPkgParams
                 if ($Status -eq $true) {
+                    ol i 'Updating PowershellGet','Success' -fore Green
                     $DryPkgMgmtBootstrapStatus.PowerShellGet = $true
                     Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
                 }
                 else {
+                    ol i 'Updating PowershellGet','Failed' -fore Red
                     throw 'Failed to install the updated PowerShellGet PowerShell module'
                 }
             }
+            else {
+                ol i 'Updating PowershellGet','Already OK' -fore Green
+            }
 
-            # Chocolatey PackageManagement
-            ol i 'PkgMgmt Status: Chocolatey',$DryPkgMgmtBootstrapStatus.Chocolatey
+            # Chocolatey choco.exe
             if (-not ($DryPkgMgmtBootstrapStatus.Chocolatey)) {
                 $Status = Initialize-DryPkgMgmtComponent -Component 'Chocolatey' @InitDryPkgParams
                 if ($Status -eq $true) {
+                    ol i 'Installing Chocolatey','Success' -fore Green
                     $DryPkgMgmtBootstrapStatus.Chocolatey = $true
                     Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
                 }
                 else {
+                    ol i 'Installing Chocolatey','Failed' -fore Red
                     throw 'Failed to install or upgrade Chocolatey'
                 }
             }
+            else {
+                ol i 'Installing Chocolatey','Already OK' -fore Green
+            }
 
             # Foil PowerShell module
-            ol i 'PkgMgmt Status: Foil',$DryPkgMgmtBootstrapStatus.Foil
             if (-not ($DryPkgMgmtBootstrapStatus.Foil)) {
                 $Status = Initialize-DryPkgMgmtComponent -Component 'Foil' @InitDryPkgParams
                 if ($Status -eq $true) {
+                    ol i 'Installing Foil','Success' -fore Green
                     $DryPkgMgmtBootstrapStatus.Foil = $true
                     Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
                 }
                 else {
+                    ol i 'Installing Foil','Failed' -fore Red
                     throw 'Failed to install or upgrade the Foil chocolatey helper module'
                 }
             }
+            else {
+                ol i 'Installing Foil','Already OK' -fore Green
+            }
+
+            # PowershellGet Package Provider
+            if (-not ($DryPkgMgmtBootstrapStatus.ChocolateyGet)) {
+                $Status = Initialize-DryPkgMgmtComponent -Component 'ChocolateyGet' @InitDryPkgParams
+                if ($Status -eq $true) {
+                    ol i 'Installing ChocolateyGet','Success' -fore Green
+                    $DryPkgMgmtBootstrapStatus.ChocolateyGet = $true
+                    Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
+                }
+                else {
+                    ol i 'Installing ChocolateyGet','Failed' -fore Red
+                    throw 'Failed to install or upgrade the Foil chocolatey helper module'
+                }
+            }
+            else {
+                ol i 'Installing ChocolateyGet','Already OK' -fore Green
+            }
 
             # Git Client
-            ol i 'PkgMgmt Status: Git',$DryPkgMgmtBootstrapStatus.Git
             if (-not ($DryPkgMgmtBootstrapStatus.Git)) {
                 $Status = Initialize-DryPkgMgmtComponent -Component 'Git' @InitDryPkgParams
                 if ($Status -eq $true) {
+                    ol i 'Installing Git Client','Success' -fore Green
                     $DryPkgMgmtBootstrapStatus.Git = $true
                     Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
                 }
                 else {
+                    ol i 'Installing Git Client','Failed' -fore Red
                     throw 'Failed to install or upgrade Git client'
                 }
             }
+            else {
+                ol i 'Installing Git Client','Already OK' -fore Green
+            }
 
             # Git Automation PowerShell module
-            ol i 'PkgMgmt Status: GitAutomation',$DryPkgMgmtBootstrapStatus.GitAutomation
             if (-not ($DryPkgMgmtBootstrapStatus.GitAutomation)) {
                 $Status = Initialize-DryPkgMgmtComponent -Component 'GitAutomation' @InitDryPkgParams
                 if ($Status -eq $true) {
+                    ol i 'Installing GitAutomation','Success' -fore Green
                     $DryPkgMgmtBootstrapStatus.GitAutomation = $true
                     Save-DryPkgMgmtBootstrapStatus @GetSaveDryPkgMgmtBootstrapStatusParams -DryPkgBootstrapStatus $DryPkgMgmtBootstrapStatus
                 }
                 else {
+                    ol i 'Installing GitAutomation','Failed' -fore Red
                     throw 'Failed to install or upgrade the GitAutomation PowerShell module'
                 }
+            }
+            else {
+                ol i 'Installing GitAutomation','Already OK' -fore Green
             }
         }
     }

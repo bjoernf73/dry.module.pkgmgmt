@@ -33,21 +33,22 @@
                 Confirm        = $false
                 Force          = $true
             }
-            Remove-Module -Name 'PackageManagement','PowerShellGet' -Force -ErrorAction SilentlyContinue
             Install-Module @InstallModuleParams | Out-Null
         }
         
+        Remove-Module -Name 'PowershellGet','PackageManagement' -Force -ErrorAction Ignore -WarningAction SilentlyContinue
         $Modules = @(Get-Module -Name 'PackageManagement' -ListAvailable -ErrorAction Stop | Sort-Object -Property 'Version' -Descending -ErrorAction Stop)
-        $ModulesToRemove = $Modules | Where-Object { 
-            $_.Version -lt $Modules[0].Version
+        if ($Modules[0].Version -lt $MinimumModuleVersion) {
+            return $false
         }
-        Remove-Module -Name 'PackageManagement' -Force -ErrorAction SilentlyContinue
-        foreach ($ModuleToRemove in $ModulesToRemove) {
-            Remove-Item -Path (Split-Path -Path $ModuleToRemove.Path) -Recurse -Confirm:$false
+        else {
+            return $true
         }
-        return $true
     }
     catch {
         $PSCmdlet.ThrowTerminatingError($_)
+    }
+    finally {
+        Remove-Module -Name 'PowershellGet','PackageManagement' -Force -ErrorAction Ignore -WarningAction SilentlyContinue
     }
 }

@@ -21,4 +21,7 @@
     catch {
         $PSCmdlet.ThrowTerminatingError($_)
     }
+    finally {
+        Remove-Module -Name 'PowershellGet','PackageManagement' -Force -ErrorAction Ignore -WarningAction SilentlyContinue
+    }
 }

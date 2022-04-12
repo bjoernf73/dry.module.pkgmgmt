@@ -23,10 +23,22 @@
             }
         }
         $MyPackageSource = Set-PackageSource -Name $PackageSourceName -Trusted -ErrorAction 'Stop'  #this will return the package source
-        Install-PackageProvider -Name 'Nuget' -MinimumVersion $MinimumProviderVersion -Scope AllUsers -Source $MyPackageSource -Confirm:$false -Force | Out-Null
+        
+        $InstallPackageProviderParams = @{
+            Name           = 'Nuget'
+            MinimumVersion = $MinimumProviderVersion 
+            Scope          = 'AllUsers'
+            Source         = $MyPackageSource 
+            Confirm        = $false 
+            Force          = $true
+        }
+        Install-PackageProvider @InstallPackageProviderParams | Out-Null
         return $true
     }
     catch {
         $PSCmdlet.ThrowTerminatingError($_)
+    }
+    finally {
+        Remove-Module -Name 'PowershellGet','PackageManagement' -Force -ErrorAction Ignore -WarningAction SilentlyContinue
     }
 }
