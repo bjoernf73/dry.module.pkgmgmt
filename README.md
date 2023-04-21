@@ -43,12 +43,12 @@ Register and unregister package sources. Supports the source types:
 ## Package Installations
 Installs packages, using PackageManagement (a.k.a OneGet). Supports packages of the following types: 
 
-- PowerShell modules (nuget)
+- PowerShell modules (nuget) (Get-Module, Install-, Uninstall-)
 - Chocolatey packages (nuget)
 - Git-repos as PowerShell modules (git, cloned into the system PSModulePath)
 - Git-repos (cloned into any folder)
-- Windows Roles and Features
-- Windows Optional Components
+- Windows Roles and Features (Get-WindowsFeature, Install-, Uninstall- / Get-WindowsOptionalFeature, Enable-, Disable-)
+- Windows Capabilities (Get-WindowsCapability, Add-, Remove-)
 
 
 ## Package Management bootstrapping in Packer
