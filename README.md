@@ -5,8 +5,8 @@ A PSmodule to
  1. manage package source registrations
  1. install packages
 
-## Bootstrapping package management
-For some reason, at the time of writing at least, most Windows variants ships with outdated components for proper package management. The exported function `Initialize-DryPkgMgmt` fixes that (bootstraps packagemanagement). 
+## Bootstrapping Package Management Plus
+For some reason, at the time of writing at least, most Windows variants ships with outdated components for proper package management. The exported function `Initialize-DryPkgMgmt` fixes that Plus. The *Plus* means that the list below is probably an evergrowing list of configs and tools in which some are related to package management (like updated versions of the Nuget package provider or the PowerShellGet module) 
 Anyways:
 
 ```powershell
@@ -20,7 +20,7 @@ $MinimumVersions = [PSCustomObject]@{
     GitAutomation     = [System.Version]"0.14.0" 
 }
 ```
-The Nuget-provider, and the PackageManagement and PowerShellGet PSModules, are the components vital to packagemenagement on Windows, that I'm referring to above. The rest of the components are enhancement modules that enables easier chocolatey and git management for this module. 
+The Nuget-provider, and the PackageManagement and PowerShellGet PSModules, are the components vital to packagemenagement on Windows, that I'm referring to above. The rest of the components are enhancement modules that enables easier management of chocolatey packages, git repos, and others. 
 
 The bootstrapping does the following: 
 
@@ -134,3 +134,6 @@ If you use Packer to create images, the following powershell-provisioner config 
   }
 }
 ```
+
+# Notes 
+Using `Find-PackageProvider *`, you'll get a list of package providers for the OneGet meta package provider (this sentence may be inaccurate - it will be altered as I gather a more complete understanding of the meaning of Nuget, OneGet, PowerShellGet, PackageManagement module and so on. This is a pretty confusing subject. Additionaly, MS has made package management even more confusing by splitting available Windows components into features, optional features, capabilities, appx and so on, even making it different for client and server OS's. It makes no sense whatsoever). 

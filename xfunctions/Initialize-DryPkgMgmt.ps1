@@ -3,9 +3,11 @@ Using NameSpace System.Management.Automation
  This module provides functions for bootstrapping package management, 
  registering package sources and package installations for use with 
  DryDeploy. ModuleConfigs may specify dependencies in it's root config
- that this module processes.
+ that this module processes automagically. Those requirements, however, 
+ relates to the DryDeploy agent computer (the computer on which DD is 
+ running).
 
- Copyright (C) 2022  Bjorn Henrik Formo (bjornhenrikformo@gmail.com)
+ Copyright (C) 2023  Bjorn Henrik Formo (bjornhenrikformo@gmail.com)
  LICENSE: https://raw.githubusercontent.com/bjoernf73/dry.module.pkgmgmt/main/LICENSE
  
  This program is free software; you can redistribute it and/or modify
@@ -42,7 +44,6 @@ function Initialize-DryPkgMgmt {
         [Parameter(Mandatory,ParameterSetName = 'RemoteCustom')]
         [PSObject]$SessionConfig
     )
-    
     try {
         ol i 'Initializing DryPkgMgmt' -sh
         ol v 'PkgMgmtInit Parameterset',$PSCmdlet.ParameterSetName
