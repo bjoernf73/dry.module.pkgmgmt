@@ -19,8 +19,8 @@ This file fetures tables tracking ideas (the easy part) vs implented functionali
 | f3 |  |  | 0% | n/a |
 | f4 |  |  | 0% | n/a |
 
-## Sources
-The sources-part of the module, registers online (public) or private sources for packages. While features, optional features, capabilities and so on are predominantly available-in-os, allthough semibright brains at Microsoft has romanced with ideas of removing this lately (there must be idiots at every company. Microsoft is no exception, allthough current employees).
+## Providers
+The providers-part registers online (public) or private sources for packages. 
 
 | feature | get | set | progress | comments |
 | -------| --- | --- | -------- | -------- |
