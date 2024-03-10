@@ -1,10 +1,11 @@
 # Functions lists
-This file fetures tables tracking ideas (the easy part) vs implented functionality (the fun part, sometimes tricky part, but definately the *reason why* part, in the spirit of the great Terry A. Davis)
+This file fetures tables tracking ideas (the easy part) vs implented functionality (the fun but sometimes tricky part, but definately the *reason why* part, in the spirit of the great Terry A. Davis)
 
 ## Bootstrapping
+For mysterious reasons, recent versions of Windows have shipped with defect package management 
 | feature | get | set | progress | comments |
 | -------| --- | --- | -------- | -------- |
-| Chocolatey | x | x | 100% | The choco.exe executable |
+| Chocolatey | x | x | 100% | Installation of Chocolatey, the choco.exe executable |
 | ChocolateyGet | x | x | 100% | The ChcolateyGet module |
 | Git client | x | x | 100% | Git client |
 | Legacy Package Management | x | x | 100% | The legacy PackageManagement module must be physically removed from every instance of Windows for modern package management to function properly |
@@ -25,6 +26,6 @@ The providers-part registers online (public) or private sources for packages.
 | feature | get | set | progress | comments |
 | -------| --- | --- | -------- | -------- |
 | Providers |  |  | 0% | Custom providers of any type |
-| Chocolatey |  |  | 0% | register your private chocolatey provider in the os to be used by choco.exe|
+| Chocolatey |  |  | 0% | register your private chocolatey provider with choco.exe |
 
-## Executing
+## Executing 
